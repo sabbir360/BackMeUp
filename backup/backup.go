@@ -68,6 +68,7 @@ func CompareFileAndProcess(fromPath, toPath string) {
 
 	if fcerror != nil {
 		fmt.Println("||ERROR||: Copy failed", fcerror)
+		log.Println("Copied Failed", fcerror)
 	} else if copyOccured {
 		totalCopiedFile = totalCopiedFile + 1
 		fmt.Println("||INFO||: Successfully copied from", fromPath, " to ", toPath)
@@ -129,7 +130,7 @@ type DirectoryDataConfiJSON struct {
 
 // ReadConfig is a helper which execute JSON file
 func ReadConfig(path string) {
-	modifyFileName := "BackMeUpModify.log"
+	modifyFileName := GetLogPath()
 	os.Remove(modifyFileName)
 	mlogf, err := os.OpenFile(modifyFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
@@ -138,7 +139,6 @@ func ReadConfig(path string) {
 
 		log.SetOutput(mlogf)
 		// log.Println("This is a test log entry")
-
 		jsonByte, err := ioutil.ReadFile(path)
 		if err == nil {
 			jo := []DirectoryDataConfiJSON{}
@@ -175,9 +175,36 @@ func ReadConfig(path string) {
 
 }
 
-// GetCurrentDirectoryPath will return current directory
-func GetCurrentDirectoryPath(path string) string {
+// GetLogPath will return current directory
+func GetLogPath() string {
+	filename := "/BackMeUpModify.log"
 	//GetMyPath Returns the absolute directory of this(pathfind.go) file
-	p, _ := filepath.Abs(path)
-	return p
+
+	return GetConfigPath(true) + filename
+}
+
+// GetConfigPath will return current directory
+func GetConfigPath(pathOnly bool) string {
+	filename := "/backmeup.config.json"
+	//GetMyPath Returns the absolute directory of this(pathfind.go) file
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]) + filename)
+	if err != nil {
+		if pathOnly {
+			return "."
+		}
+		return "." + filename
+	}
+
+	if _, err := os.Stat(dir + filename); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		if pathOnly {
+			return "."
+		}
+		return "." + filename
+	}
+	if pathOnly {
+		dir, _ = filepath.Abs(filepath.Dir(os.Args[0]))
+		return dir
+	}
+	return dir
 }
