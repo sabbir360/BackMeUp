@@ -145,7 +145,7 @@ func ReadConfig(path string) {
 
 			marshalErr := json.Unmarshal(jsonByte, &jo)
 			if marshalErr != nil {
-				fmt.Println(marshalErr)
+				fmt.Println("JSON Unmarshed error. ", marshalErr)
 			} else {
 				totalChannel := len(jo)
 				fileProgress := make(chan bool, totalChannel)
