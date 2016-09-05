@@ -9,12 +9,15 @@ import (
 
 func main() {
 	// go backup.ReadDirectory("./", "")
+
+	dir := backup.GetCurrentDirectoryPath("./backmeup.config.json")
+	fmt.Println(dir)
 	timeLayout := "Mon, 2 Jan 2006 15:04:05"
 	fmt.Print("Keep patiences, we're so smart to finish things as fast as we can.\n\n")
 	startTime := time.Now()
 	fmt.Println("Started at", startTime.Format(timeLayout))
 
-	backup.ReadConfig("./config.json")
+	backup.ReadConfig(dir)
 
 	// var input string
 	// fmt.Scanln(&input)

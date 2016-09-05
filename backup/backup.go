@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var totalFile, totalCopiedFile int
@@ -128,7 +129,7 @@ type DirectoryDataConfiJSON struct {
 
 // ReadConfig is a helper which execute JSON file
 func ReadConfig(path string) {
-	modifyFileName := "modify.log"
+	modifyFileName := "BackMeUpModify.log"
 	os.Remove(modifyFileName)
 	mlogf, err := os.OpenFile(modifyFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
@@ -172,4 +173,11 @@ func ReadConfig(path string) {
 
 	}
 
+}
+
+// GetCurrentDirectoryPath will return current directory
+func GetCurrentDirectoryPath(path string) string {
+	//GetMyPath Returns the absolute directory of this(pathfind.go) file
+	p, _ := filepath.Abs(path)
+	return p
 }
