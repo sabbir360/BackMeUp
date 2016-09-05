@@ -5,8 +5,14 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 )
+
+var totalFile, totalCopiedFile int
+
+// var modifyLog, modLogErr os.Open
+// var totalLog, totalLogErr os.Open
 
 // CopyFile Copies file source to destination dest.
 func CopyFile(source string, dest string) (err error) {
@@ -45,10 +51,12 @@ func CompareFileAndProcess(fromPath, toPath string) {
 
 		if err != nil {
 			fmt.Println("---->New file detected as", fromFileName)
+			log.Println("---->New file detected as", fromFileName)
 			fcerror = CopyFile(fromPath, toPath)
 			copyOccured = true
 		} else if fileTo.Size() != fileFrom.Size() {
 			fmt.Println("---->Modification detected for", fromFileName)
+			log.Println("---->Modification detected for", fromFileName)
 			fcerror = CopyFile(fromPath, toPath)
 			copyOccured = true
 		}
@@ -60,7 +68,9 @@ func CompareFileAndProcess(fromPath, toPath string) {
 	if fcerror != nil {
 		fmt.Println("||ERROR||: Copy failed", fcerror)
 	} else if copyOccured {
+		totalCopiedFile = totalCopiedFile + 1
 		fmt.Println("||INFO||: Successfully copied from", fromPath, " to ", toPath)
+		log.Println("Copied from", fromPath, " to ", toPath)
 	}
 
 }
@@ -100,7 +110,7 @@ func ReadDirectory(fileProgress chan bool, directory string, directoryTo string)
 				// modificationTime := file.ModTime()
 				// fmt.Println(readObj, "is", "file.", "Modification time:", modificationTime)
 				// fmt.Println("Processing file-->", readObj, "With", toReadObj)
-
+				totalFile = totalFile + 1
 				CompareFileAndProcess(readObj, toReadObj)
 			}
 		}
@@ -118,27 +128,48 @@ type DirectoryDataConfiJSON struct {
 
 // ReadConfig is a helper which execute JSON file
 func ReadConfig(path string) {
+	modifyFileName := "modify.log"
+	os.Remove(modifyFileName)
+	mlogf, err := os.OpenFile(modifyFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
-	jsonByte, err := ioutil.ReadFile(path)
 	if err == nil {
-		jo := []DirectoryDataConfiJSON{}
+		defer mlogf.Close()
 
-		marshalErr := json.Unmarshal(jsonByte, &jo)
-		if marshalErr != nil {
-			fmt.Println(marshalErr)
+		log.SetOutput(mlogf)
+		// log.Println("This is a test log entry")
+
+		jsonByte, err := ioutil.ReadFile(path)
+		if err == nil {
+			jo := []DirectoryDataConfiJSON{}
+
+			marshalErr := json.Unmarshal(jsonByte, &jo)
+			if marshalErr != nil {
+				fmt.Println(marshalErr)
+			} else {
+				totalChannel := len(jo)
+				fileProgress := make(chan bool, totalChannel)
+
+				// var modifyLog, modLogErr = os.Open("./modified.log")
+				// var totalLog, totalLogErr os.OpenFile
+
+				for _, r := range jo {
+					go ReadDirectory(fileProgress, r.SourceDir, r.DestinationDir)
+				}
+
+				for i := 0; i < totalChannel; i++ {
+					<-fileProgress
+				}
+
+			}
 		} else {
-			totalChannel := len(jo)
-			fileProgress := make(chan bool, totalChannel)
-			for _, r := range jo {
-				go ReadDirectory(fileProgress, r.SourceDir, r.DestinationDir)
-			}
-
-			for i := 0; i < totalChannel; i++ {
-				<-fileProgress
-			}
-
+			fmt.Println("||ERROR||: Config Read Error!", err)
 		}
+
+		fmt.Println("\nTotal files:", totalFile, ", New/Modified:", totalCopiedFile)
+
 	} else {
-		fmt.Println("||ERROR||: Config Read Error!", err)
+		fmt.Println("Log open failed.", err)
+
 	}
+
 }

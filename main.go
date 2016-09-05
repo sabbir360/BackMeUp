@@ -19,7 +19,7 @@ func main() {
 	// var input string
 	// fmt.Scanln(&input)
 	endTime := time.Now()
-	fmt.Print("\n\nDone at ", endTime.Format(timeLayout))
+	fmt.Print("Done at ", endTime.Format(timeLayout))
 	duration := time.Since(startTime)
 	fmt.Print("\nTotal time taken ", duration.Seconds(), " Seconds or, ", duration.Minutes(), " Minutes\n")
 
