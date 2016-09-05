@@ -1,0 +1,10 @@
+[
+    {
+        "source_dir":"/home/sabbir/CodeZone/PHPLab",
+        "destination_dir":"/home/sabbir/test_"
+    },
+    {
+        "source_dir":"/home/sabbir/CodeZone/GOYa",
+        "destination_dir":"/home/sabbir/test_/GoYa"
+    }
+]
