@@ -9,3 +9,7 @@ This is a sample program which will copy files if new/modified based on config.j
 - From this directrory 
   - go run main.go or, 
   - go build main.go && ./main
+  - 
+- For windows users 
+  - path name should be "C:\\users" rather "/home/users"
+  - after go build execute `main.exe` from `cmd`

@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
+	"runtime"
+
+	"github.com/kardianos/osext"
 )
 
 var totalFile, totalCopiedFile int
@@ -139,6 +141,7 @@ func ReadConfig(path string) {
 
 		log.SetOutput(mlogf)
 		// log.Println("This is a test log entry")
+
 		jsonByte, err := ioutil.ReadFile(path)
 		if err == nil {
 			jo := []DirectoryDataConfiJSON{}
@@ -169,7 +172,7 @@ func ReadConfig(path string) {
 		fmt.Println("\nTotal files:", totalFile, ", New/Modified:", totalCopiedFile)
 
 	} else {
-		fmt.Println("Log open failed.", err)
+		fmt.Println("Log open failed. For path ", path, ". Error::", err)
 
 	}
 
@@ -177,34 +180,66 @@ func ReadConfig(path string) {
 
 // GetLogPath will return current directory
 func GetLogPath() string {
-	filename := "/BackMeUpModify.log"
+	var filename string
+	// if runtime.GOOS == "windows" {
+	// 	filename = "BackMeUpModify.log"
+	// } else {
+	// 	filename = "/BackMeUpModify.log"
+	// }
+	filename = "BackMeUpModify.log"
 	//GetMyPath Returns the absolute directory of this(pathfind.go) file
 
-	return GetConfigPath(true) + filename
+	return GetConfigPath(true) + "/" + filename
+}
+
+func isWindows() bool {
+	if runtime.GOOS == "windows" {
+		return true
+	}
+	return false
 }
 
 // GetConfigPath will return current directory
 func GetConfigPath(pathOnly bool) string {
-	filename := "/backmeup.config.json"
+	var filename string
+	// if runtime.GOOS == "windows" {
+	// 	filename = "/backmeup.config.json"
+	// } else {
+	// 	filename = "/backmeup.config.json"
+	// }
+	filename = "backmeup.config.json"
 	//GetMyPath Returns the absolute directory of this(pathfind.go) file
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]) + filename)
+
+	dir, err := osext.ExecutableFolder()
+
 	if err != nil {
 		if pathOnly {
-			return "."
+			return ""
 		}
-		return "." + filename
-	}
 
-	if _, err := os.Stat(dir + filename); os.IsNotExist(err) {
+		return filename
+	}
+	// fmt.Println(folderPath)
+
+	// dir, err := filepath.Abs(filepath.Dir(os.Args[0]) + filename)
+	// if err != nil {
+	// 	if pathOnly {
+	// 		return ""
+	// 	}
+
+	// 	return "" + filename
+	// }
+
+	if _, err := os.Stat(dir + "/" + filename); os.IsNotExist(err) {
 		// path/to/whatever does not exist
-		if pathOnly {
-			return "."
+		if !pathOnly {
+			return filename
 		}
-		return "." + filename
+		// return filename
 	}
 	if pathOnly {
-		dir, _ = filepath.Abs(filepath.Dir(os.Args[0]))
+		//dir, _ = filepath.Abs(filepath.Dir(os.Args[0]))
 		return dir
 	}
-	return dir
+	return dir + "/" + filename
 }

@@ -9,7 +9,11 @@ import (
 
 func main() {
 	// go backup.ReadDirectory("./", "")
-
+	// folderPath, err := osext.ExecutableFolder()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(folderPath)
 	dir := backup.GetConfigPath(false)
 
 	timeLayout := "Mon, 2 Jan 2006 15:04:05"
